@@ -21,7 +21,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-
     private final JwtAuthFilter jwtAuthFilter;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
@@ -61,7 +60,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        
+        // ADD YOUR RENDER FRONTEND URL HERE
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",                              // Local dev
+                "https://smart-resource-hiring-frontend.onrender.com"             // <-- REPLACE THIS
+        ));
+        
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -76,4 +81,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-
