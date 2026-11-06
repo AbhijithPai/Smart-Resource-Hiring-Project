@@ -1,6 +1,7 @@
 package com.config;
 
 import com.filter.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,13 +16,21 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final String DEFAULT_ALLOWED_ORIGINS = "http://localhost:5173";
+
     private final JwtAuthFilter jwtAuthFilter;
+
+    // Comma-separated list of allowed frontend origins, e.g.
+    // CORS_ALLOWED_ORIGINS=http://localhost:5173,https://srh-frontend.onrender.com
+    @Value("${app.cors.allowed-origins:" + DEFAULT_ALLOWED_ORIGINS + "}")
+    private String allowedOrigins = DEFAULT_ALLOWED_ORIGINS;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -61,13 +70,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // ADD YOUR RENDER FRONTEND URL HERE
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",                              // Local dev
-                "https://smart-resource-hiring-frontend.onrender.com"             // <-- REPLACE THIS
-        ));
-        
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList());
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 

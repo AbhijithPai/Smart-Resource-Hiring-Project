@@ -1,0 +1,51 @@
+# Render Blueprint: deploys the database, Spring Boot API and React frontend together.
+# In the Render dashboard: New -> Blueprint -> pick this repo.
+databases:
+  - name: srh-db
+    plan: free
+    region: singapore
+    databaseName: srh
+    user: srh
+    ipAllowList: []   # only reachable from Render services
+
+services:
+  - type: web
+    name: smart-resource-hiring-api
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: backend/srh-backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /v3/api-docs
+    envVars:
+      - key: PGHOST
+        fromDatabase: { name: srh-db, property: host }
+      - key: PGPORT
+        fromDatabase: { name: srh-db, property: port }
+      - key: PGDATABASE
+        fromDatabase: { name: srh-db, property: database }
+      - key: PGUSER
+        fromDatabase: { name: srh-db, property: user }
+      - key: PGPASSWORD
+        fromDatabase: { name: srh-db, property: password }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false   # entered in the dashboard; resume parsing needs it
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://smart-resource-hiring-web.onrender.com,http://localhost:5173
+
+  - type: web
+    name: smart-resource-hiring-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://smart-resource-hiring-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
