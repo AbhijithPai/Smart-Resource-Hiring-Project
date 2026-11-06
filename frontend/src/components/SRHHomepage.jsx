@@ -2356,7 +2356,7 @@ Rules:
 - Return ONLY the JSON object, nothing else`;
 
       const groqBody = {
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         messages: [
           {
             role: 'user',
@@ -2364,7 +2364,9 @@ Rules:
           },
         ],
         temperature: 0.1,
-        max_tokens: 1000,
+        // gpt-oss is a reasoning model: keep reasoning short and leave room for the JSON answer
+        reasoning_effort: 'low',
+        max_tokens: 2000,
       };
 
       const authData = localStorage.getItem('srhAuth');
